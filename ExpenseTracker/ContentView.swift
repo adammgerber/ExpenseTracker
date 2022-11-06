@@ -7,10 +7,11 @@
 
 import SwiftUI
 
-struct ExpenseItem {
+struct ExpenseItem: Identifiable {
+    let id = UUID()
     let name: String
     let type: String
-    let amount: Double
+    let amount: Int
 }
 
 class Expenses: ObservableObject {
@@ -22,6 +23,7 @@ class Expenses: ObservableObject {
 struct ContentView: View {
     
     @StateObject var expenses = Expenses()
+    @State private var showingAddExpense = false
     
     func removeItems(at offsets: IndexSet) {
         expenses.items.remove(atOffsets: offsets)
@@ -31,7 +33,7 @@ struct ContentView: View {
     var body: some View {
         NavigationView{
             List{
-                ForEach(expenses.items, id: \.name) { item in
+                ForEach(expenses.items) { item in
                     Text(item.name)
                 }
                 .onDelete(perform: removeItems)
@@ -39,13 +41,14 @@ struct ContentView: View {
             .navigationTitle("ExpenseTracker")
             .toolbar {
                 Button {
-                    let expense = ExpenseItem(name: "Test", type: "Personal", amount: 5)
-                    expenses.items.append(expense)
-
+                    showingAddExpense = true
                 } label: {
                     Image(systemName: "plus")
                 }
             }
+        }
+        .sheet(isPresented: $showingAddExpense){
+            AddView(expenses: expenses)
         }
     }
 }
